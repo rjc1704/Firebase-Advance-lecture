@@ -4,36 +4,17 @@ import LetterCard from "./LetterCard";
 import { useQuery } from "@tanstack/react-query";
 import { getLetters } from "api/queryFns";
 import { toast } from "react-toastify";
-// import { useState } from "react";
 
 export default function LetterList() {
-  // const [letters, setLetters] = useState([]);
   const activeMember = useSelector((state) => state.member);
   const { data: letters, isLoading } = useQuery({
     queryKey: ["letters", activeMember],
     queryFn: getLetters,
     throwOnError: (err) => {
+      console.log("err", err);
       toast.error(err.message);
     },
   });
-
-  // const getData = async () => {
-  //   const letterRef = collection(db, "fanLetters");
-  // const q = query(
-  //   letterRef,
-  //   where("writedTo", "==", activeMember),
-  //   orderBy("createdAt", "desc")
-  // );
-  // const snapshot = await getDocs(q);
-  // const lettersForActiveMember = [];
-  // snapshot.forEach((doc) => {
-  //   lettersForActiveMember.push({ id: doc.id, ...doc.data() });
-  // });
-  //   setLetters(lettersForActiveMember);
-  // }
-  // useEffect(() => {
-  //   getData();
-  // }, [])
 
   if (isLoading) {
     return <p>로딩중...</p>;
