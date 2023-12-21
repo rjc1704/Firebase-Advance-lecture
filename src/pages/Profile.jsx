@@ -1,14 +1,24 @@
 import styled from "styled-components";
 import Avatar from "components/common/Avatar";
 import Button from "components/common/Button";
-import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { __editProfile } from "redux/modules/authSlice";
+import { useContext } from "react";
+import { AuthContext } from "context/AuthContext";
+import { updateProfile } from "firebase/auth";
+import {
+  collection,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { auth, db, fbStorage } from "firebaseApp";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export default function Profile() {
-  const dispatch = useDispatch();
-  const { avatar, nickname, userId } = useSelector((state) => state.auth);
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  const { displayName: nickname, uid: userId, photoURL: avatar } = currentUser;
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingText, setEditingText] = useState("");
@@ -27,17 +37,47 @@ export default function Profile() {
     setSelectedImg(imgUrl);
   };
 
-  const onEditDone = () => {
+  const uploadImg = async () => {
+    const storageRef = ref(fbStorage, `${Date.now()}/${userId}.jpeg`);
+    const { ref: imgRef } = await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(imgRef);
+    return downloadUrl;
+  };
+
+  const onEditDone = async () => {
     // TODO: 프로필 변경 요청
-    const formData = new FormData();
+    const authEditObj = {}; // Auth DB 보낼 데이터
+    const fsEditObj = {}; // Firestore DB 보낼 데이터
     if (editingText) {
-      formData.append("nickname", editingText);
+      authEditObj.displayName = editingText;
+      fsEditObj.nickname = editingText;
     }
+    let imgUrl;
     if (selectedImg !== avatar) {
-      formData.append("avatar", file);
+      imgUrl = await uploadImg();
+      authEditObj.photoURL = imgUrl;
+      fsEditObj.avatar = imgUrl;
     }
-    dispatch(__editProfile(formData));
+    setCurrentUser((prev) => ({
+      ...prev,
+      displayName: editingText,
+      photoURL: imgUrl,
+    }));
+    await updateProfile(auth.currentUser, authEditObj);
+    toast.success("프로필 변경 완료!");
     setIsEditing(false);
+
+    // firestore 의 내 fanLetters의 avatar, nickname 필드에도 반영
+    const lettersRef = collection(db, "fanLetters");
+    const myLettersQuery = query(lettersRef, where("userId", "==", userId));
+    const snapshot = await getDocs(myLettersQuery);
+    const myRefArr = [];
+    snapshot.forEach((letter) => {
+      myRefArr.push(letter.ref);
+    });
+    for (const myRef of myRefArr) {
+      await updateDoc(myRef, fsEditObj);
+    }
   };
 
   return (

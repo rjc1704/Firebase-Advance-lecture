@@ -4,7 +4,11 @@ import defaultUser from "assets/defaultUser.png";
 export default function Avatar({ src, size }) {
   return (
     <AvatarFigure size={size}>
-      <img src={src ?? defaultUser} alt="아바타이미지" />
+      <img
+        src={src ?? defaultUser}
+        alt="아바타이미지"
+        referrerPolicy="no-referrer"
+      />
     </AvatarFigure>
   );
 }

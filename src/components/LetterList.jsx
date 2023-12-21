@@ -3,34 +3,31 @@ import { useSelector } from "react-redux";
 import LetterCard from "./LetterCard";
 import { useQuery } from "@tanstack/react-query";
 import { getLetters } from "api/queryFns";
+import { toast } from "react-toastify";
 
 export default function LetterList() {
-  const { data: letters, isLoading } = useQuery({
-    queryKey: ["letters"],
-    queryFn: getLetters,
-  });
-
   const activeMember = useSelector((state) => state.member);
+  const { data: letters, isLoading } = useQuery({
+    queryKey: ["letters", activeMember],
+    queryFn: getLetters,
+    throwOnError: (err) => {
+      toast.error(err.message);
+    },
+  });
 
   if (isLoading) {
     return <p>로딩중...</p>;
   }
 
-  const filteredLetters = letters.filter(
-    (letter) => letter.writedTo === activeMember
-  );
-
   return (
     <ListWrapper>
-      {filteredLetters.length === 0 ? (
+      {letters.length === 0 ? (
         <p>
           {activeMember}에게 남겨진 팬레터가 없습니다. 첫 번째 팬레터의 주인공이
           되보세요!
         </p>
       ) : (
-        filteredLetters.map((letter) => (
-          <LetterCard key={letter.id} letter={letter} />
-        ))
+        letters.map((letter) => <LetterCard key={letter.id} letter={letter} />)
       )}
     </ListWrapper>
   );

@@ -13,7 +13,7 @@ export default function LetterCard({ letter }) {
         <Avatar src={letter.avatar} />
         <NicknameAndDate>
           <p>{letter.nickname}</p>
-          <time>{getFormattedDate(letter.createdAt)}</time>
+          <time>{letter.createdAt}</time>
         </NicknameAndDate>
       </UserInfo>
       <Content>{letter.content}</Content>

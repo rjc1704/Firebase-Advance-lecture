@@ -3,20 +3,21 @@ import Button from "components/common/Button";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { getFormattedDate } from "util/date";
-import { useSelector } from "react-redux";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { getLetters } from "api/queryFns";
+import { getLetter } from "api/queryFns";
 import { deleteLetter, editLetter } from "api/mutationFns";
+import { useContext } from "react";
+import { AuthContext } from "context/AuthContext";
 
 export default function Detail() {
-  const myUserId = useSelector((state) => state.auth.userId);
-
-  const { data: letters, isLoading } = useQuery({
-    queryKey: ["letters"],
-    queryFn: getLetters,
+  const { id } = useParams();
+  const { currentUser } = useContext(AuthContext);
+  const myUserId = currentUser.uid;
+  const { data: letter, isLoading } = useQuery({
+    queryKey: ["letters", id],
+    queryFn: getLetter,
   });
   const queryClient = useQueryClient();
   const { mutate: mutateToDelete } = useMutation({
@@ -35,7 +36,6 @@ export default function Detail() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingText, setEditingText] = useState("");
   const navigate = useNavigate();
-  const { id } = useParams();
 
   const onDeleteBtn = () => {
     const answer = window.confirm("정말로 삭제하시겠습니까?");
@@ -56,8 +56,7 @@ export default function Detail() {
     return <p>로딩중...</p>;
   }
 
-  const { avatar, nickname, createdAt, writedTo, content, userId } =
-    letters.find((letter) => letter.id === id);
+  const { avatar, nickname, createdAt, writedTo, content, userId } = letter;
   const isMine = myUserId === userId;
 
   return (
@@ -74,7 +73,7 @@ export default function Detail() {
             <Avatar src={avatar} size="large" />
             <Nickname>{nickname}</Nickname>
           </AvatarAndNickname>
-          <time>{getFormattedDate(createdAt)}</time>
+          <time>{createdAt}</time>
         </UserInfo>
         <ToMember>To: {writedTo}</ToMember>
         {isEditing ? (
