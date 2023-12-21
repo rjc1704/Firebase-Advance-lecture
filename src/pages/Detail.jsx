@@ -14,7 +14,6 @@ import { AuthContext } from "context/AuthContext";
 export default function Detail() {
   const { id } = useParams();
   const { currentUser } = useContext(AuthContext);
-  const myUserId = currentUser.uid;
   const { data: letter, isLoading } = useQuery({
     queryKey: ["letters", id],
     queryFn: getLetter,
@@ -56,6 +55,7 @@ export default function Detail() {
     return <p>로딩중...</p>;
   }
 
+  const myUserId = currentUser?.uid;
   const { avatar, nickname, createdAt, writedTo, content, userId } = letter;
   const isMine = myUserId === userId;
 
