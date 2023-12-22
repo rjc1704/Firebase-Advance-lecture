@@ -31,3 +31,15 @@ export const getLetter = async ({ queryKey }) => {
   const letter = await getDoc(ref);
   return { id: letter.id, ...letter.data() };
 };
+
+export const getComments = async ({ queryKey }) => {
+  const [, id] = queryKey;
+  const commentsRef = collection(db, "fanLetters", id, "comments");
+  const commentsQuery = query(commentsRef);
+  const snapshot = await getDocs(commentsQuery);
+  const commentList = [];
+  snapshot.forEach((comment) => {
+    commentList.push({ id: comment.id, ...comment.data() });
+  });
+  return commentList;
+};

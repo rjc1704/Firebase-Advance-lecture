@@ -10,6 +10,8 @@ import { getLetter } from "api/queryFns";
 import { deleteLetter, editLetter } from "api/mutationFns";
 import { useContext } from "react";
 import { AuthContext } from "context/AuthContext";
+import CommentList from "components/comments/CommentList";
+import CommentAddForm from "components/comments/CommentAddForm";
 
 export default function Detail() {
   const { id } = useParams();
@@ -100,6 +102,8 @@ export default function Detail() {
           </>
         )}
       </DetailWrapper>
+      <CommentAddForm id={id} />
+      <CommentList id={id} />
     </Container>
   );
 }
@@ -107,9 +111,10 @@ export default function Detail() {
 const Container = styled.div`
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
 `;
 
 const HomeBtn = styled.div`
