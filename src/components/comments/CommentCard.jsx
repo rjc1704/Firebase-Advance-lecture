@@ -12,6 +12,7 @@ export default function CommentCard({ comment, letterId, onDelete }) {
         )}
       </div>
       <p>{comment.content}</p>
+      <p>{comment.createdAt}</p>
     </li>
   );
 }

@@ -17,6 +17,7 @@ export default function CommentAddForm({ id }) {
     onSuccess: async () => {
       await queryClient.invalidateQueries(["comments"]);
       toast.success("댓글이 등록되었습니다.");
+      setContent("");
     },
   });
 

@@ -35,7 +35,7 @@ export const getLetter = async ({ queryKey }) => {
 export const getComments = async ({ queryKey }) => {
   const [, id] = queryKey;
   const commentsRef = collection(db, "fanLetters", id, "comments");
-  const commentsQuery = query(commentsRef);
+  const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
   const snapshot = await getDocs(commentsQuery);
   const commentList = [];
   snapshot.forEach((comment) => {

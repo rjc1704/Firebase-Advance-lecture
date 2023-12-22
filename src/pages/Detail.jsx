@@ -112,7 +112,6 @@ const Container = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   min-height: 100vh;
 `;
@@ -132,6 +131,7 @@ const DetailWrapper = styled.section`
   gap: 12px;
   width: 700px;
   min-height: 400px;
+  margin-top: 80px;
 `;
 
 const UserInfo = styled.div`
