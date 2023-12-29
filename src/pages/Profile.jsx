@@ -10,8 +10,8 @@ import {
   collection,
   getDocs,
   query,
-  updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { auth, db, fbStorage } from "firebaseApp";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
@@ -45,10 +45,13 @@ export default function Profile() {
   };
 
   const onEditDone = async () => {
-    // TODO: 프로필 변경 요청
+    if (!editingText && !file) {
+      return toast.warn("변경 사항이 없습니다.");
+    }
+
     const authEditObj = {}; // Auth DB 보낼 데이터
     const fsEditObj = {}; // Firestore DB 보낼 데이터
-    if (editingText) {
+    if (editingText && editingText !== nickname) {
       authEditObj.displayName = editingText;
       fsEditObj.nickname = editingText;
     }
@@ -58,25 +61,31 @@ export default function Profile() {
       authEditObj.photoURL = imgUrl;
       fsEditObj.avatar = imgUrl;
     }
-    setCurrentUser((prev) => ({
-      ...prev,
-      displayName: editingText,
-      photoURL: imgUrl,
-    }));
-    await updateProfile(auth.currentUser, authEditObj);
-    toast.success("프로필 변경 완료!");
-    setIsEditing(false);
+    try {
+      setCurrentUser((prev) => ({
+        ...prev,
+        displayName: editingText,
+        photoURL: imgUrl,
+      }));
+      await updateProfile(auth.currentUser, authEditObj);
+      toast.success("프로필 변경 완료!");
+      setIsEditing(false);
 
-    // firestore 의 내 fanLetters의 avatar, nickname 필드에도 반영
-    const lettersRef = collection(db, "fanLetters");
-    const myLettersQuery = query(lettersRef, where("userId", "==", userId));
-    const snapshot = await getDocs(myLettersQuery);
-    const myRefArr = [];
-    snapshot.forEach((letter) => {
-      myRefArr.push(letter.ref);
-    });
-    for (const myRef of myRefArr) {
-      await updateDoc(myRef, fsEditObj);
+      // firestore 의 내 fanLetters의 avatar, nickname 필드에도 반영
+      const lettersRef = collection(db, "fanLetters");
+      const myLettersQuery = query(lettersRef, where("userId", "==", userId));
+      const snapshot = await getDocs(myLettersQuery);
+
+      // Firestore 에 프로필 관련 변경
+      const batch = writeBatch(db);
+      snapshot.forEach((letter) => {
+        batch.update(letter.ref, fsEditObj);
+      });
+      await batch.commit();
+    } catch (err) {
+      toast.error(err.message);
+      // 프로필 변경 실패 시 변경 전 상태로 원상복구
+      setCurrentUser(auth.currentUser);
     }
   };
 

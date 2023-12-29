@@ -1,5 +1,5 @@
 import { AuthContext } from "context/AuthContext";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "firebaseApp";
 import { useContext } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
@@ -29,11 +29,6 @@ export default function Layout() {
       // 클라이언트 로그아웃 처리 후 Auth 서버 로그아웃 처리
       navigate("/");
       logout();
-      await signOut(auth)
-        .then((result) => {
-          toast.success("로그아웃 되었습니다.");
-        })
-        .catch((err) => toast.error(err.message));
     } else {
       // 로그인 처리
       loginByGoogle();
@@ -45,7 +40,9 @@ export default function Layout() {
         <Link to="/">Home</Link>
         <div>
           {isAuth && <Link to="/profile">내 프로필</Link>}
-          <Link onClick={handleAuth}>{isAuth ? "로그아웃" : "로그인"}</Link>
+          <Link onClick={handleAuth}>
+            {auth.currentUser ? "로그아웃" : "로그인"}
+          </Link>
         </div>
       </Header>
       <Outlet />
