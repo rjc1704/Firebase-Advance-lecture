@@ -5,7 +5,7 @@ export default function CommentCard({ comment, letterId, onDelete }) {
     <li>
       <div>
         <span>{comment.nickname}</span>
-        {comment.userId === auth.currentUser.uid && (
+        {comment.userId === auth.currentUser?.uid && (
           <p onClick={() => onDelete({ letterId, commentId: comment.id })}>
             삭제
           </p>
